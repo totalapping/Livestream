@@ -1,41 +1,34 @@
 #!/bin/bash
 
-# Create app directory if not exists
+# Memory Management (Critical for Railway Free Tier)
+ulimit -v 450000  # Limit to 450MB memory
+echo 1 > /proc/sys/vm/overcommit_memory  # Prevent OOM kills
+
+# Create app directory
 mkdir -p /app
 
-# Download video only if not already present (with retries)
+# Download video with retries (optimized)
 if [ ! -f "/app/video.mp4" ]; then
-  echo "[$(date)] Downloading video..." >> /app/stream.log
-  for i in {1..5}; do
-    wget https://github.com/totalapping/Livestream/releases/download/v1.0/live.mp4 -O /app/video.mp4
-    if [ $? -eq 0 ]; then
-      echo "[$(date)] Download successful" >> /app/stream.log
-      break
-    else
-      echo "[$(date)] Download attempt $i failed" >> /app/stream.log
-      sleep 10
-    fi
+  for i in {1..3}; do
+    wget -q --show-progress https://github.com/totalapping/Livestream/releases/download/v1.0/live.mp4 -O /app/video.mp4 && break
+    sleep 10
   done
 fi
 
-# Verify video exists before streaming
-if [ ! -f "/app/video.mp4" ]; then
-  echo "[$(date)] ERROR: Video file missing!" >> /app/stream.log
-  exit 1
-fi
+# Verify video
+[ ! -f "/app/video.mp4" ] && echo "[$(date)] ERROR: Video missing!" >> /app/stream.log && exit 1
 
-# Infinite streaming loop for vertical video
+# Optimized FFmpeg Command for Vertical Stream
 while true; do
-  echo "[$(date)] Starting 9:16 vertical stream (720x1280)..." >> /app/stream.log
+  echo "[$(date)] Starting 9:16 stream (540x960 optimized)..." >> /app/stream.log
   
-  ffmpeg -re -stream_loop -1 -i "/app/video.mp4" \
-    -c:v libx264 -preset veryfast -b:v 2500k -maxrate 2500k -bufsize 5000k \
-    -vf "scale=720:1280:force_original_aspect_ratio=decrease,pad=720:1280:(ow-iw)/2:(oh-ih)/2:black" \
-    -g 60 -keyint_min 30 \
-    -c:a aac -b:a 128k -ar 44100 \
-    -f flv "rtmp://a.rtmp.youtube.com/live2/y0f9-1dxx-ppjq-pfh3-40u6" 2>> /app/ffmpeg.log
+  ffmpeg -loglevel warning -re -stream_loop -1 -i "/app/video.mp4" \
+    -c:v libx264 -preset ultrafast -tune zerolatency \
+    -b:v 2000k -maxrate 2200k -bufsize 4000k \
+    -vf "scale=540:960:force_original_aspect_ratio=decrease,pad=540:960:(ow-iw)/2:(oh-ih)/2:black" \
+    -g 60 -threads 1 \
+    -c:a aac -b:a 96k -ar 44100 \
+    -f flv "rtmp://a.rtmp.youtube.com/live2/2ytm-kw83-gwbh-ch8p-fxhd" 2>> /app/ffmpeg.log
   
-  # If stream crashes
-  echo "[$(date)] Stream crashed! Restarting in 5 seconds..." >> /app/stream.log
   sleep 5
 done
