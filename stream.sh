@@ -24,15 +24,16 @@ if [ ! -f "/app/video.mp4" ]; then
   exit 1
 fi
 
-# Infinite streaming loop
+# Infinite streaming loop for vertical video
 while true; do
-  echo "[$(date)] Starting stream..." >> /app/stream.log
+  echo "[$(date)] Starting 9:16 vertical stream (720x1280)..." >> /app/stream.log
   
   ffmpeg -re -stream_loop -1 -i "/app/video.mp4" \
     -c:v libx264 -preset veryfast -b:v 2500k -maxrate 2500k -bufsize 5000k \
-    -vf "scale=720:1280,fps=30" -g 60 -keyint_min 30 \
+    -vf "scale=720:1280:force_original_aspect_ratio=decrease,pad=720:1280:(ow-iw)/2:(oh-ih)/2:black" \
+    -g 60 -keyint_min 30 \
     -c:a aac -b:a 128k -ar 44100 \
-    -f flv "rtmp://a.rtmp.youtube.com/live2/y0f9-1dxx-ppjq-pfh3-40u6" 2>> /app/ffmpeg.log
+    -f flv "rtmp://a.rtmp.youtube.com/live2/2ytm-kw83-gwbh-ch8p-fxhd" 2>> /app/ffmpeg.log
   
   # If stream crashes
   echo "[$(date)] Stream crashed! Restarting in 5 seconds..." >> /app/stream.log
