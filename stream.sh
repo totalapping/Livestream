@@ -33,7 +33,7 @@ while true; do
     -vf "scale=720:1280:force_original_aspect_ratio=decrease,pad=720:1280:(ow-iw)/2:(oh-ih)/2:black" \
     -g 60 -keyint_min 30 \
     -c:a aac -b:a 128k -ar 44100 \
-    -f flv "rtmp://a.rtmp.youtube.com/live2/2ytm-kw83-gwbh-ch8p-fxhd" 2>> /app/ffmpeg.log
+    -f flv "rtmp://a.rtmp.youtube.com/live2/y0f9-1dxx-ppjq-pfh3-40u6" 2>> /app/ffmpeg.log
   
   # If stream crashes
   echo "[$(date)] Stream crashed! Restarting in 5 seconds..." >> /app/stream.log
