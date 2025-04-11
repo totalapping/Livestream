@@ -28,7 +28,7 @@ while true; do
     -vf "scale=540:960:force_original_aspect_ratio=decrease,pad=540:960:(ow-iw)/2:(oh-ih)/2:black" \
     -g 60 -threads 1 \
     -c:a aac -b:a 96k -ar 44100 \
-    -f flv "rtmp://a.rtmp.youtube.com/live2/3gzc-uts3-xp4q-zd0a-brkb" 2>> /app/ffmpeg.log
+    -f flv "rtmp://a.rtmp.youtube.com/live2/2y18-4tcf-0dfc-d5jp-3wq5" 2>> /app/ffmpeg.log
   
   sleep 5
 done
